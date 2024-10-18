@@ -7,10 +7,11 @@ import {
   Route,
   RouterProvider,
 } from 'react-router-dom';
+import { Provider } from 'react-redux'; // Import the Provider
+import store from './store'; // Make sure the path is correct
 import App from './App'; // Main layout component
 import LoginScreen from './screens/LoginScreen'; // Login screen component
 import DashboardScreen from './screens/DashboardScreen'; // Dashboard screen component
-
 
 // Create the router with routes
 const router = createBrowserRouter(
@@ -27,6 +28,8 @@ const router = createBrowserRouter(
 // Render the app to the DOM
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <RouterProvider router={router} />
+    <Provider store={store}> {/* Wrap with Provider */}
+      <RouterProvider router={router} />
+    </Provider>
   </React.StrictMode>
 );
