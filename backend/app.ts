@@ -12,9 +12,15 @@ dotenv.config();
 // Initialize the Express app
 const app = express();
 
+// CORS options
+const corsOptions = {
+  origin:  "http://localhost:3000", // Allow all origins
+  credentials: true, // Allow credentials (cookies)
+};
+
 // Middleware
 app.use(express.json()); // Parse incoming JSON data
-app.use(cors()); // Enable Cross-Origin Resource Sharing
+app.use(cors(corsOptions)); // Enable Cross-Origin Resource Sharing
 app.use(cookieParser()); // Parse cookies
 
 
