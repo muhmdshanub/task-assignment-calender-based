@@ -1,8 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
+import AppError from '../utils/appError'; // Adjust the import path as needed
 
-// Custom error handling middleware for Node.js + TypeScript
 const errorHandlerMiddleware = (
-  err: any, // or a custom Error type
+  err: AppError | Error, // Use the custom AppError type
   req: Request,
   res: Response,
   next: NextFunction
@@ -10,8 +10,8 @@ const errorHandlerMiddleware = (
   // Set default status code to 500 if not already set
   let statusCode = res.statusCode === 200 ? 500 : res.statusCode;
 
-  // Check if the error object has a custom statusCode
-  if (err.statusCode) {
+  // Check if the error object is an instance of AppError
+  if (err instanceof AppError) {
     statusCode = err.statusCode;
   }
 
