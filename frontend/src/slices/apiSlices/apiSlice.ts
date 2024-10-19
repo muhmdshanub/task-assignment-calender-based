@@ -3,7 +3,7 @@ import { fetchBaseQuery, createApi } from '@reduxjs/toolkit/query/react';
 
 // Update baseQuery without authentication or refresh token logic
 const baseQuery = fetchBaseQuery({
-  baseUrl: import.meta.env.VITE_BASE_API_URL, // Ensure this is defined in your .env file
+  baseUrl: import.meta.env.VITE_BASE_URL || "http://localhost:8000/api", // Ensure this is defined in your .env file
   credentials: 'include', // Include credentials with every request, if needed
 });
 

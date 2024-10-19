@@ -13,7 +13,7 @@ export const authApiSlice = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ['User'], // Tag for cache invalidation
     }),
-    logout: builder.mutation({
+    logout: builder.mutation<void, void>({
       query: () => ({
         url: `${AUTH_URL}/logout`,
         method: 'POST',
