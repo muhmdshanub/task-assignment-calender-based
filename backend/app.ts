@@ -4,6 +4,8 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import errorHandlerMiddleware from './middlewares/errorHandlerMiddleware';
 
+import authRoute from './routes/authRoute'
+
 // Initialize environment variables
 dotenv.config();
 
@@ -14,6 +16,9 @@ const app = express();
 app.use(express.json()); // Parse incoming JSON data
 app.use(cors()); // Enable Cross-Origin Resource Sharing
 app.use(cookieParser()); // Parse cookies
+
+
+app.use('/api/auth', authRoute)
 
 // Placeholder route for now
 app.get('/', (req: Request, res: Response) => {

@@ -2,6 +2,9 @@
 
 import connectDB from '../configs/db'; // Adjust the path as needed
 import createManagerUser from '../utils/createManager'; // Adjust the path as needed
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const start = async () => {
     try {

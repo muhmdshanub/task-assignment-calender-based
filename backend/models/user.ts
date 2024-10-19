@@ -2,7 +2,8 @@ import mongoose, { Schema, Document } from 'mongoose';
 import bcrypt from 'bcryptjs';
 
 // Define the User interface
-interface IUser extends Document {
+export interface IUser extends Document {
+  _id: mongoose.Types.ObjectId; 
   name: string;
   email: string;
   password: string; // Ensure to hash passwords
@@ -10,6 +11,7 @@ interface IUser extends Document {
   manager?: mongoose.Types.ObjectId; // Reference to the manager's User ID
   createdAt: Date;
   updatedAt: Date;
+  matchPassword(enteredPassword: string): Promise<boolean>;
 }
 
 // Define the User schema

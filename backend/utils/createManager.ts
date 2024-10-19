@@ -2,8 +2,8 @@ import User from '../models/user'; // Adjust the import path as needed
 
 // Utility function to create an admin user
 const createManagerUser = async (
-  name: string = 'Jane Doe',
-  email: string = 'jane.doe@example.com',
+  name: string = 'Admin User',
+  email: string = 'admin@example.com',
   password: string = '12345678'
 ) => {
   try {
