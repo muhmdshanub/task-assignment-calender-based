@@ -5,6 +5,7 @@ import cookieParser from 'cookie-parser';
 import errorHandlerMiddleware from './middlewares/errorHandlerMiddleware';
 
 import authRoute from './routes/authRoute'
+import userRoute from './routes/userRoute'
 
 // Initialize environment variables
 dotenv.config();
@@ -25,6 +26,7 @@ app.use(cookieParser()); // Parse cookies
 
 
 app.use('/api/auth', authRoute)
+app.use('/api/users', userRoute)
 
 // Placeholder route for now
 app.get('/', (req: Request, res: Response) => {
