@@ -11,14 +11,14 @@ export const authApiSlice = apiSlice.injectEndpoints({
         method: 'POST',
         body: credentials, // Pass the credentials (email and password)
       }),
-      invalidatesTags: ['User'], // Tag for cache invalidation
+      invalidatesTags: ['Users'], // Tag for cache invalidation
     }),
     logout: builder.mutation<void, void>({
       query: () => ({
         url: `${AUTH_URL}/logout`,
         method: 'POST',
       }),
-      invalidatesTags: ['User'], // Tag for cache invalidation
+      invalidatesTags: ['Users'], // Tag for cache invalidation
     }),
   }),
 });

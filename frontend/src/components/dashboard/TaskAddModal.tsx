@@ -15,11 +15,14 @@ import {
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { SelectChangeEvent } from '@mui/material'; // Import SelectChangeEvent
+import { Employee } from '../../types/employeeUserData';
+
+
 
 interface TaskModalProps {
   open: boolean;
   selectedDate: string;
-  employees: string[];
+  employees: Employee[];
   onClose: () => void;
   onSubmit: (taskDetails: { date: string; employee: string; taskName: string }) => void;
 }
@@ -69,8 +72,8 @@ const TaskModal: React.FC<TaskModalProps> = ({ open, selectedDate, employees, on
           <InputLabel>Employee</InputLabel>
           <Select value={selectedEmployee} onChange={handleEmployeeChange}>
             {employees.map((employee, index) => (
-              <MenuItem key={index} value={employee}>
-                {employee}
+              <MenuItem key={employee._id} value={employee._id}>
+                {`${employee.name}${employee.manager ? "":" (Me) "}`}
               </MenuItem>
             ))}
           </Select>

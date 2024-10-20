@@ -1,5 +1,6 @@
 // src/screens/DashboardScreen.tsx
 import React,{useState, useEffect} from 'react';
+import { useSelector } from 'react-redux';
 import { AppBar, Box, Grid, Paper, Typography , Button} from '@mui/material';
 import CustomCalendar from '../components/dashboard/CustomCalendar'
 import dayjs from 'dayjs';
@@ -10,9 +11,20 @@ import TaskList from '../components/dashboard/TaskList';
 import TaskEditModal from '../components/dashboard/TaskEditModal';
 import DeleteTaskModal from '../components/dashboard/TaskDeleteModal';
 
+import { useLazyGetUsersManagedByCurrentUserQuery } from '../slices/apiSlices/usersApiSlice';
+import { Employee } from '../types/employeeUserData';
+
+
+
+
 const DashboardScreen: React.FC = () => {
 
+  const userInfo = useSelector((state: any) => state.userAuth.userInfo);
 
+  // Lazy query hook for fetching users
+  const [fetchUsers, { data : employeesData, error : employeesError, isLoading : employeesLoading }] = useLazyGetUsersManagedByCurrentUserQuery();
+
+  //fetching all the current user data that has been under this manager
   // State for year, month, and day
   const [year, setYear] = useState<number>(dayjs().year()); // Initialize with current year
   const [month, setMonth] = useState<number>(dayjs().month() + 1); // Initialize with current month (0-based index)
@@ -23,7 +35,8 @@ const DashboardScreen: React.FC = () => {
   const [daysInMonth, setDaysInMonth] = useState<number>(dayjs(`${year}-${month}`).daysInMonth());
   const [calendarRows, setCalendarRows] = useState<number[][]>([]);
 
-  const employees = ['shan', 'manu', 'arun', 'thakoor', 'alma','Shan', 'Manu','Arun']
+  //state for storing employee details
+  const [employees, setEmployees] = useState<Employee[]>([])
 
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string>('');
@@ -41,6 +54,20 @@ const DashboardScreen: React.FC = () => {
 
   const [selectedTask, setSelectedTask] = useState<typeof defaultTask>(defaultTask);
 
+
+  //useEffect for fetching employee details
+
+  useEffect(() => {
+    if (userInfo?.role === 'Manager') {
+      fetchUsers(); // Fetch users only when the user is a manager
+    }
+  }, [userInfo, fetchUsers]);
+
+  useEffect(()=>{
+    if(employeesData?.success === true){
+      setEmployees(employeesData.data)
+    }
+  },[employeesData,])
   
   useEffect(()=>{
     // Calculate the selected date and format it as needed

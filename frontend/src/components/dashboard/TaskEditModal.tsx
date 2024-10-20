@@ -15,12 +15,15 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DateField } from '@mui/x-date-pickers/DateField';
 import dayjs, { Dayjs } from 'dayjs';
 
+import { Employee } from '../../types/employeeUserData';
+
+
 interface TaskEditModalProps {
   open: boolean;
   onClose: () => void;
   onSubmit: (taskDetails: { date: string; taskName: string; assignedEmployee: string; _id: string }) => void;
   taskDetails: { date: string; taskName: string; assignedEmployee: string; _id: string };
-  employees: string[]; // Array of employees for the select field
+  employees: Employee[]; // Array of employees for the select field
 }
 
 const TaskEditModal: React.FC<TaskEditModalProps> = ({ open, onClose, onSubmit, taskDetails, employees }) => {
@@ -72,8 +75,8 @@ const TaskEditModal: React.FC<TaskEditModalProps> = ({ open, onClose, onSubmit, 
           sx={{mb:'0.5rem'}}
         >
           {employees.map((employee) => (
-            <MenuItem key={employee}  value={employee}>
-              {employee}
+            <MenuItem key={employee._id}  value={employee._id}>
+              {`${employee.name}${employee.manager ? "":" (Me) "}`}
             </MenuItem>
           ))}
         </Select>
