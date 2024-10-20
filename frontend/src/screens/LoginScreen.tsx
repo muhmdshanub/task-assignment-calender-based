@@ -66,7 +66,7 @@ const LoginScreen: React.FC = () => {
       setPassword('');
       navigate('/dashboard');
     } catch (error: any) {
-      const apiError = error as ErrorApiResponse; // Cast error to ErrorApiResponse
+      const apiError = error.data as ErrorApiResponse; // Cast error to ErrorApiResponse
       setErrorDialogOpen(true);
       setErrorDialogTitle('Login Error');
       setErrorDialogMessage(`An error occurred during logging in: ${apiError.message}`);
@@ -81,7 +81,7 @@ const LoginScreen: React.FC = () => {
   };
 
   return (
-    <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" height="100vh">
+    <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" sx={{height:'100%', width:'100%'}}>
       <Typography variant="h4" gutterBottom>
         Login
       </Typography>

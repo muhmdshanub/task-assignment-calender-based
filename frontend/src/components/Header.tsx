@@ -27,11 +27,13 @@ const Header: React.FC = () => {
   const handleLogout = async () => {
     try {
       await logout().unwrap();
-      dispatch(userLogout());
-      navigate('/');
+      
     } catch (error) {
       console.error('Logout failed: ', error);
       setOpenError(true);
+    }finally{
+      dispatch(userLogout());
+      navigate('/');
     }
   };
 
