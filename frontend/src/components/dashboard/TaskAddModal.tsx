@@ -41,7 +41,7 @@ const TaskModal: React.FC<TaskModalProps> = ({ open, selectedDate, employees, on
   };
 
   const handleSubmit = () => {
-    if(selectedDate.trim().length < 1 || taskName.trim.length < 1 || selectedEmployee.trim().length < 1){
+    if(selectedDate.trim().length < 1 || taskName.trim().length < 1 || selectedEmployee.trim().length < 1){
       return;
     }
     onSubmit({ date: selectedDate, assignedEmployee: selectedEmployee, taskName });
@@ -76,7 +76,7 @@ const TaskModal: React.FC<TaskModalProps> = ({ open, selectedDate, employees, on
         <FormControl fullWidth margin="dense">
           <InputLabel>Employee</InputLabel>
           <Select value={selectedEmployee} onChange={handleEmployeeChange}>
-            {employees.map((employee, index) => (
+            {employees.map((employee) => (
               <MenuItem key={employee._id} value={employee._id}>
                 {`${employee.name}${employee.manager ? "":" (Me) "}`}
               </MenuItem>

@@ -1,7 +1,7 @@
 // src/screens/DashboardScreen.tsx
 import React,{useState, useEffect} from 'react';
 import { useSelector } from 'react-redux';
-import { AppBar, Box, Grid, Paper, Typography , Button} from '@mui/material';
+import {  Box, Grid, Paper, Typography , Button} from '@mui/material';
 import CustomCalendar from '../components/dashboard/CustomCalendar'
 import dayjs from 'dayjs';
 import CalendarTable from '../components/dashboard/CalendarTable';
@@ -34,28 +34,28 @@ const DashboardScreen: React.FC = () => {
   const userInfo = useSelector((state: any) => state.userAuth.userInfo);
 
   // Lazy query hook for fetching users
-  const [fetchUsers, { data : employeesData, error : employeesError, isLoading : employeesLoading }] = useLazyGetUsersManagedByCurrentUserQuery();
+  const [fetchUsers, { data : employeesData, }] = useLazyGetUsersManagedByCurrentUserQuery();
 
   //api for adding a task
-  const [addTask, { isLoading : addTaskLoading, isSuccess: isAddTaskSuccess, data : addTaskData }] = useAddTaskMutation()
+  const [addTask, {  isSuccess: isAddTaskSuccess}] = useAddTaskMutation()
 
   //api for updating a task
-  const [updateTask, { isLoading : updateTaskLoading, isSuccess: isUpdateTaskSuccess, data : updateTaskData }] = useUpdateTaskMutation()
+  const [updateTask, {  isSuccess: isUpdateTaskSuccess, }] = useUpdateTaskMutation()
 
   //api for deleting a task
-  const [deleteTask,{isLoading:deleteTaskLoading, isSuccess: isDeleteTaskSuccess, data : deleteTaskData}] = useDeleteTaskMutation()
+  const [deleteTask,{ isSuccess: isDeleteTaskSuccess, }] = useDeleteTaskMutation()
 
   //api for fetching task count summary for the current year and month for both normal employee and manager
-  const [fetchTaskCountsForManager,{ data: managerTaskCountsData, error: managerTaskCountError }] = useLazyGetTaskCountsByMonthForManagerQuery();
-  const[fetchTaskCountsForEmployee, { data: employeeTaskCountsData, error: employeeTaskCountError }] = useLazyGetTaskCountsByMonthForEmployeeQuery();
+  const [fetchTaskCountsForManager,{ data: managerTaskCountsData,  }] = useLazyGetTaskCountsByMonthForManagerQuery();
+  const[fetchTaskCountsForEmployee, { data: employeeTaskCountsData,  }] = useLazyGetTaskCountsByMonthForEmployeeQuery();
 
   //api for fetching tasks list for the current selected date (day, month, year)
 
-  const [fetchTasksForManager,{data:managerTasksData, error:managerTasksError}] = useLazyGetTasksByMonthForManagerQuery()
-  const [fetchTasksForEmployee,{data:employeeTasksData, error:employeeTasksError}] = useLazyGetTasksByMonthForEmployeeQuery()
+  const [fetchTasksForManager,{data:managerTasksData}] = useLazyGetTasksByMonthForManagerQuery()
+  const [fetchTasksForEmployee,{data:employeeTasksData}] = useLazyGetTasksByMonthForEmployeeQuery()
 
   //state for checking is manager permission
-  const [isManager, setIsManager] = useState<boolean>(userInfo.role === 'Manager' ? true : false)
+  const [isManager] = useState<boolean>(userInfo.role === 'Manager' ? true : false)
 
   //fetching all the current user data that has been under this manager
   // State for year, month, and day
@@ -64,15 +64,12 @@ const DashboardScreen: React.FC = () => {
   const [day, setDay] = useState<number>(dayjs().date()); // Initialize with current day
 
   // State for first day of month and calendar rows
-  const [firstDayOfMonth, setFirstDayOfMonth] = useState<number>(dayjs(`${year}-${month}-01`).day());
-  const [daysInMonth, setDaysInMonth] = useState<number>(dayjs(`${year}-${month}`).daysInMonth());
   const [calendarRows, setCalendarRows] = useState<number[][]>([]);
 
   //state for storing employee details
   const [employees, setEmployees] = useState<Employee[]>([])
 
-  //state for taskData for selected month
-  const [selectedMonthTaskData, setSelctedMonthData] = useState([])
+  
 
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string>('');
@@ -194,9 +191,6 @@ const DashboardScreen: React.FC = () => {
       return rows;
     };
 
-    // Update states
-    setFirstDayOfMonth(newFirstDayOfMonth);
-    setDaysInMonth(newDaysInMonth);
     setCalendarRows(newCalendarRows());
   }, [year, month]);
 
@@ -220,31 +214,6 @@ const DashboardScreen: React.FC = () => {
     setYear(newValue.year());
     setMonth(newValue.month() + 1); // Month is 0-based in Dayjs
     setDay(newValue.date());
-  };
-
-  // Handle input changes for year, month, and day
-  const handleYearChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const newYear = parseInt(event.target.value, 10);
-    if (!isNaN(newYear)) {
-      setYear(newYear);
-    }
-  };
-
-  const handleMonthChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const newMonth = parseInt(event.target.value, 10);
-    if (!isNaN(newMonth) && newMonth >= 1 && newMonth <= 12) {
-      setMonth(newMonth);
-      setDay(1); // Reset day to 1
-    }
-  };
-
-  const handleDayChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const newDay = parseInt(event.target.value, 10);
-    if (!isNaN(newDay) && newDay >= 1 && newDay <= dayjs(`${year}-${month}`).daysInMonth()) {
-      setDay(newDay);
-    } else {
-      setDay(1);
-    }
   };
 
 
@@ -274,10 +243,7 @@ const DashboardScreen: React.FC = () => {
       setErrorDialogOpen(true);
       setErrorDialogTitle('Task Error');
       setErrorDialogMessage(`An error occurred during adding the task: ${apiError?.message}`);
-    }
-     
-
-    
+    }   
 
   };
 
@@ -355,12 +321,7 @@ const DashboardScreen: React.FC = () => {
         overflow="hidden" // Prevent content from overflowing outside
         style={{ padding: "0.2rem", height: "100%", width: "100%" }}
       >
-        {/* AppBar at the top */}
-        {/* <AppBar position="static" sx={{ height: '30px', backgroundColor: 'white', border: '1px solid black', marginBottom:'0.2rem' }}>
-        <Typography variant="h6" sx={{ color: 'black', padding: '0px',  }}>
-          Dashboard
-        </Typography>
-      </AppBar> */}
+        
 
         {/* Main Content Area */}
         <Box

@@ -46,7 +46,7 @@ const TaskEditModal: React.FC<TaskEditModalProps> = ({ open, onClose, onSubmit, 
 
   const handleSubmit = () => {
 
-    if(!dateLocal || taskNameLocal.trim.length < 1 || assignedEmployeeLocal.trim().length < 1){
+    if(!dateLocal || taskNameLocal.trim().length < 1 || assignedEmployeeLocal.trim().length < 1){
       return;
     }
 

@@ -11,7 +11,7 @@ export const apiSlice = createApi({
   reducerPath: 'api', // Custom path for the API slice state
   baseQuery,
   tagTypes: ['Users','Tasks'], // Define your tag types here
-  endpoints: (builder) => ({}), // No endpoints defined yet
+  endpoints: () => ({}), // No endpoints defined yet
 });
 
 export default apiSlice;

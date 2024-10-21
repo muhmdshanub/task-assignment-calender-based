@@ -26,7 +26,7 @@ const TaskList: React.FC<TaskListProps> = ({ tasks , onEdit, onDelete, isManager
 
       }}
     >
-        {tasks.map((task, index) => (
+        {tasks.map((task) => (
           <TaskCard
             key={task._id}
             taskName={task.taskName}
