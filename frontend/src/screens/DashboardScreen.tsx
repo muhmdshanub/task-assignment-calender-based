@@ -10,17 +10,21 @@ import TaskModal from '../components/dashboard/TaskAddModal';
 import TaskList from '../components/dashboard/TaskList';
 import TaskEditModal from '../components/dashboard/TaskEditModal';
 import DeleteTaskModal from '../components/dashboard/TaskDeleteModal';
+import ErrorAlertDialog from '../components/ErrorAlertDialog';
 
 import { useLazyGetUsersManagedByCurrentUserQuery } from '../slices/apiSlices/usersApiSlice';
-import { useAddTaskMutation, 
+import {
+   useAddTaskMutation, 
   useLazyGetTaskCountsByMonthForEmployeeQuery,
    useLazyGetTaskCountsByMonthForManagerQuery ,
    useLazyGetTasksByMonthForEmployeeQuery,
    useLazyGetTasksByMonthForManagerQuery,
+   useUpdateTaskMutation,
 } from '../slices/apiSlices/taskApiSlice';
 
 import { Employee } from '../types/employeeUserData';
 import { Task } from '../types/taskTypes';
+import { ErrorApiResponse } from '../types/apiResponses';
 
 
 
@@ -33,6 +37,9 @@ const DashboardScreen: React.FC = () => {
 
   //api for adding a task
   const [addTask, { isLoading : addTaskLoading, isSuccess: isAddTaskSuccess, data : addTaskData }] = useAddTaskMutation()
+
+  //api for updating a task
+  const [updateTask, { isLoading : updateTaskLoading, isSuccess: isUpdateTaskSuccess, data : updateTaskData }] = useUpdateTaskMutation()
 
   //api for fetching task count summary for the current year and month for both normal employee and manager
   const [fetchTaskCountsForManager,{ data: managerTaskCountsData, error: managerTaskCountError }] = useLazyGetTaskCountsByMonthForManagerQuery();
@@ -70,12 +77,6 @@ const DashboardScreen: React.FC = () => {
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
 
-  // const defaultTask = {
-  //   date: '',
-  //   taskName: '',
-  //   assignedEmployee: '',
-  //   _id: '',
-  // };
 
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
@@ -84,6 +85,11 @@ const DashboardScreen: React.FC = () => {
 
   //state for current date tasks list
   const [tasksByDate, setTasksByDate] = useState<Task[]>([])
+
+  // State for error dialog
+  const [errorDialogOpen, setErrorDialogOpen] = useState(false);
+  const [errorDialogTitle, setErrorDialogTitle] = useState('');
+  const [errorDialogMessage, setErrorDialogMessage] = useState('');
 
 
   //useEffect for fetching employee details
@@ -131,7 +137,7 @@ const DashboardScreen: React.FC = () => {
   useEffect(()=>{
     if(userInfo.role === 'Manager'){
       fetchTasksForManager({  year, month, day })
-      console.log("should called the api")
+      
     }else{
       fetchTasksForEmployee({  year, month, day })
     }
@@ -140,7 +146,7 @@ const DashboardScreen: React.FC = () => {
   useEffect(()=>{
     
     if(userInfo.role === 'Manager' && managerTasksData ){
-      console.log("should updated the tasks state")
+      
       setTasksByDate(managerTasksData.data)
 
     }else if(userInfo.role !== 'Manager' && employeeTasksData){
@@ -192,11 +198,18 @@ const DashboardScreen: React.FC = () => {
 
   //sample useffect for handling the taskAdded data
 
-  useEffect(()=>{
-    if(isAddTaskSuccess ){
-      console.log(addTaskData.data)
+  useEffect( () =>{
+    if(isAddTaskSuccess || isUpdateTaskSuccess ){
+      if(userInfo.role === 'Manager'){
+         fetchTaskCountsForManager({year, month});
+         fetchTasksForManager({year, month, day})
+
+      }else{
+        fetchTaskCountsForEmployee({year, month});
+        fetchTasksForEmployee({year, month, day})
+      }
     }
-  },[isAddTaskSuccess, addTaskData])
+  },[isAddTaskSuccess, isUpdateTaskSuccess])
 
   // Update year, month, and day when the calendar value changes
   const handleDateChange = (newValue: any) => {
@@ -250,11 +263,13 @@ const DashboardScreen: React.FC = () => {
     try{
       
       await addTask(taskDetails).unwrap()
-      console.log('Task submitted:');
+      
       alert("successfully added the task")
-    }catch(error){
-      console.log(error)
-      alert('failed to add task')
+    }catch(error : any){
+      const apiError = error.data as ErrorApiResponse;
+      setErrorDialogOpen(true);
+      setErrorDialogTitle('Task Error');
+      setErrorDialogMessage(`An error occurred during adding the task: ${apiError?.message}`);
     }
      
 
@@ -274,10 +289,20 @@ const DashboardScreen: React.FC = () => {
     setSelectedTask(null)
   };
 
-  const handleEditTaskSubmit = (taskDetails: {taskName: string, _id:string, assignedEmployee: string, date: string}) => {
+  const handleEditTaskSubmit = async (taskDetails: {taskName: string, taskId:string, assignedEmployee: string, date: string}) => {
     // Sample submit function
     console.log('Task Edited:', taskDetails);
     // Here, you would typically call an API to save the task
+
+    try {
+      await updateTask(taskDetails)
+      handleCloseEditModal()
+    } catch (error : any) {
+      const apiError = error.data as ErrorApiResponse;
+      setErrorDialogOpen(true);
+      setErrorDialogTitle('Task Error');
+      setErrorDialogMessage(`An error occurred during task updation: ${apiError?.message}`);
+    }
   };
 
 
@@ -298,17 +323,23 @@ const DashboardScreen: React.FC = () => {
     // Sample submit function
     console.log('Task Deleted:', selectedTask?.taskName, selectedTask?._id);
     // Here, you would typically call an API to save the task
+    try {
+      
+    } catch (error : any) {
+
+      const apiError = error.data as ErrorApiResponse;
+      setErrorDialogOpen(true);
+      setErrorDialogTitle('Delete Error');
+      setErrorDialogMessage(`An error occurred during task deletion ${apiError?.message}`);
+    }
   };
 
 
-  const sampleTasks = [
-    { taskName: 'Prepare Report', date: '2024-10-01', assignedEmployee: 'Shan' },
-    { taskName: 'Update Website', date: '2024-10-02', assignedEmployee: 'Manu' },
-    { taskName: 'Design Mockups', date: '2024-10-03', assignedEmployee: 'Arun' },
-    { taskName: 'Prepare Report', date: '2024-10-01', assignedEmployee: 'Shan' },
-    { taskName: 'Update Website', date: '2024-10-02', assignedEmployee: 'Manu' },
-    { taskName: 'Design Mockups', date: '2024-10-03', assignedEmployee: 'Arun' },
-  ];
+  const handleCloseErrorDialog = () => {
+    setErrorDialogOpen(false);
+    setErrorDialogTitle('');
+    setErrorDialogMessage('');
+  };
 
   
   return (
@@ -491,6 +522,15 @@ const DashboardScreen: React.FC = () => {
             taskName={selectedTask.taskName}
           />
         </>
+      )}
+
+      {errorDialogOpen && (
+        <ErrorAlertDialog
+          open={errorDialogOpen}
+          handleClose={handleCloseErrorDialog}
+          title={errorDialogTitle}
+          message={errorDialogMessage}
+        />
       )}
     </>
   );

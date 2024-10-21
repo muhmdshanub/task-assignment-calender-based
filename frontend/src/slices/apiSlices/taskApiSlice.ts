@@ -1,6 +1,6 @@
 // src/slices/apiSlices/taskApiSlice.ts
 import { apiSlice } from './apiSlice';
-import {TaskCountResponse,  GetTaskCountsQueryParams, GetTaskCountsForEmployeeQueryParams, TaskListResponse, GetTasksForManagerQueryParams } from '../../types/taskTypes'; // Adjust the import path as necessary
+import {TaskCountResponse,  GetTaskCountsQueryParams, GetTaskCountsForEmployeeQueryParams, TaskListResponse, GetTasksForManagerQueryParams, UpdateTaskInput, UpdateTaskResponse } from '../../types/taskTypes'; // Adjust the import path as necessary
 
 
 // Define the base URL for tasks
@@ -58,6 +58,16 @@ export const taskApiSlice = apiSlice.injectEndpoints({
       providesTags: ['Tasks'], // Update this to match your tag setup
     }),
 
+    updateTask: builder.mutation<UpdateTaskResponse, UpdateTaskInput>({
+      query: ({ taskId,  taskName, assignedEmployee, date }) => ({
+        url: `${TASK_URL}/${taskId}`, // Ensure this matches your backend route for updating the task
+        method: 'PUT', // Use PUT or POST depending on your backend setup
+        body: { taskName, assignedEmployee, date }, // Pass the task updates in the request body
+        
+      }),
+      invalidatesTags: ['Tasks'], // Invalidate relevant cache entries after this mutation
+    }),
+
     
   }),
 });
@@ -69,5 +79,6 @@ export const {
   useLazyGetTaskCountsByMonthForEmployeeQuery,
   useLazyGetTasksByMonthForEmployeeQuery,
   useLazyGetTasksByMonthForManagerQuery ,
+  useUpdateTaskMutation,
 
 } = taskApiSlice;

@@ -1,4 +1,4 @@
-import { body } from 'express-validator';
+import { body, check, param } from 'express-validator';
 
 export const validateAddTask = [
   body('taskName')
@@ -19,6 +19,18 @@ export const validateAddTask = [
     .notEmpty()
     .withMessage(' date is required'),
 ];
+
+export const updateTaskValidator = [
+  param('taskId').isMongoId().withMessage('Invalid task ID'), // Ensure the task ID is valid
+  body('taskName').notEmpty().withMessage('Task name is required'),
+  body('assignedEmployee')
+    .isMongoId()
+    .withMessage('Invalid employee ID'),
+  body('date')
+    .isISO8601({ strict: true })
+    .withMessage('Invalid date format, must be in ISO 8601 format (yyyy-mm-dd)'),
+];
+
 
 import { query } from 'express-validator';
 

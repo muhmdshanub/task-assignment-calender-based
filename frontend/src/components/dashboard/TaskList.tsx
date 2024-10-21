@@ -14,7 +14,7 @@ interface TaskListProps {
 
 const TaskList: React.FC<TaskListProps> = ({ tasks , onEdit, onDelete, isManager}) => {
 
-  console.log(tasks)
+  
   return (
     <Box
       sx={{
@@ -32,8 +32,8 @@ const TaskList: React.FC<TaskListProps> = ({ tasks , onEdit, onDelete, isManager
             taskName={task.taskName}
             date={task.date}
             assignedEmployee={task.assignedEmployee}
-            onEdit={() => onEdit({ ...task, _id: index.toString() })} // Pass the task details to onEdit
-            onDelete={() => onDelete({ ...task, _id: index.toString() })} // Pass the task details to onDelete
+            onEdit={() => onEdit(task)} // Pass the task details to onEdit
+            onDelete={() => onDelete(task )} // Pass the task details to onDelete
             isManager={isManager}
           />
         ))}

@@ -44,3 +44,16 @@
     success: boolean; // Indicates if the response was successful
     data: Task[];    // Array of task data
   }
+
+  export interface UpdateTaskInput {
+    taskId: string; // Task ID to update
+    taskName: string; // New task name
+    assignedEmployee: string; // New assigned employee (ID)
+    date: string; // ISO-formatted date string
+  }
+  
+  export interface UpdateTaskResponse {
+    success: boolean; // Indicates if the response was successful
+    message: string;
+    data: Task;    // Array of task data
+  }

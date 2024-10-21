@@ -1,6 +1,6 @@
 // controllers/taskController.ts
 import { Request, Response, NextFunction } from 'express';
-import { createTask , getTaskCountsByMonthForManager, getTaskCountsByMonthForEmployee, fetchTasksByDateForManager, fetchTasksByDateForEmployee} from '../services/taskService';
+import { createTask , updateTask, getTaskCountsByMonthForManager, getTaskCountsByMonthForEmployee, fetchTasksByDateForManager, fetchTasksByDateForEmployee} from '../services/taskService';
 import AppError from '../utils/appError'; // Import the AppError class
 import mongoose from 'mongoose';
 
@@ -152,7 +152,7 @@ export const getTasksByDateForManager = async (req: Request, res: Response, next
     const tasks = await fetchTasksByDateForManager(managerId, year, month, day);
 
     console.log(tasks)
-    
+
     res.status(200).json({
       success: true,
       data: tasks,
@@ -194,5 +194,44 @@ export const getTasksByDateForEmployee = async (req: Request, res: Response, nex
       return next(error); // Forward AppError to the global error handler
     }
     next(new AppError(500, 'An unexpected error occurred while fetching task data.'));
+  }
+};
+
+
+// @desc update a task from manager
+// @route PUT /api/tasks/:taskId
+// @access Private for employee
+
+export const updateTaskById = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+
+    console.log("recieved here")
+    if (!req.user) {
+      return next(new AppError(401, 'Not authorized'));
+    }
+
+    const managerId = req.user._id; // Manager's ID from the request
+    const taskId = req.params.taskId; // Task ID from the URL
+    const { taskName, assignedEmployee, date } = req.body; // Extract task data from the request body
+
+    const updatedTask = await updateTask({
+      taskId,
+      managerId,
+      taskName,
+      assignedEmployee,
+      date,
+    });
+
+    if (!updatedTask) {
+      return next(new AppError(404, 'Task not found or not authorized to update'));
+    }
+
+     res.status(200).json({
+      success: true,
+      message: 'Task updated successfully',
+      data: updatedTask,
+    });
+  } catch (error) {
+    next(new AppError(500, 'An unexpected error occurred while updating the task'));
   }
 };

@@ -22,15 +22,18 @@ import { Task } from '../../types/taskTypes';
 interface TaskEditModalProps {
   open: boolean;
   onClose: () => void;
-  onSubmit: (taskDetails: {taskName: string, _id:string, assignedEmployee: string, date: string}) => void;
+  onSubmit: (taskDetails: {taskName: string, taskId:string, assignedEmployee: string, date: string}) => void;
   taskDetails: Task;
   employees: Employee[]; // Array of employees for the select field
 }
 
 const TaskEditModal: React.FC<TaskEditModalProps> = ({ open, onClose, onSubmit, taskDetails, employees }) => {
+
   const [dateLocal, setDateLocal] = useState<Dayjs | null>(dayjs(taskDetails.date));
   const [taskNameLocal, setTaskNameLocal] = useState(taskDetails.taskName);
   const [assignedEmployeeLocal, setAssignedEmployeeLocal] = useState(taskDetails.assignedEmployee._id);
+
+ 
 
   useEffect(() => {
     // Reset the fields when the modal opens
@@ -43,7 +46,7 @@ const TaskEditModal: React.FC<TaskEditModalProps> = ({ open, onClose, onSubmit, 
 
   const handleSubmit = () => {
     const formattedDate = dateLocal?.format('YYYY-MM-DD') || '';
-    onSubmit({ date: formattedDate, taskName : taskNameLocal, assignedEmployee : assignedEmployeeLocal, _id: taskDetails._id });
+    onSubmit({ date: formattedDate, taskName : taskNameLocal, assignedEmployee : assignedEmployeeLocal, taskId: taskDetails._id });
   };
 
   return (

@@ -273,3 +273,45 @@ export const fetchTasksByDateForEmployee = async (
 
   return tasks; // Return tasks with user name details
 };
+
+interface UpdateTaskInput {
+  taskId: mongoose.Types.ObjectId | string;
+  managerId: mongoose.Types.ObjectId | string;
+  taskName: string;
+  assignedEmployee: mongoose.Types.ObjectId | string;
+  date: string; // Date in ISO format
+}
+
+export const updateTask = async ({
+  taskId,
+  managerId,
+  taskName,
+  assignedEmployee,
+  date,
+}: UpdateTaskInput) => {
+  const formattedDate = new Date(date);
+
+  const employee = await User.findById(assignedEmployee);
+  if (!employee) {
+    throw new AppError(404, 'Assigned employee not found');
+  }
+
+  if (employee.manager?.toString() !== managerId.toString()) {
+    throw new AppError(403, 'You are not the manager of the assigned employee');
+  }
+
+  // Update the task only if it is created by the manager
+  const updatedTask = await Task.findOneAndUpdate(
+    { _id: taskId, createdManager: managerId },
+    {
+      taskName,
+      assignedEmployee,
+      date: formattedDate, // Update date as a proper Date object
+    },
+    { new: true } // Return the updated document
+  )
+    .populate('createdManager', '_id name') // Populate manager data
+    .populate('assignedEmployee', '_id name'); // Populate assigned employee data
+
+  return updatedTask;
+};
