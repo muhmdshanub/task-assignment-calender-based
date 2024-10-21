@@ -14,13 +14,13 @@ export const createTask = async (taskDetails: {
   const { createdManager, assignedEmployee } = taskDetails;
 
   // Verify that the assignedEmployee is managed by createdManager
-  const employee = await User.findById(assignedEmployee).select('manager');
+  const employee = await User.findById(assignedEmployee).select('manager role');
   
   if (!employee) {
     throw new AppError(404, 'Assigned employee not found');
   }
 
-  if (employee.manager?.toString() !== createdManager.toString()) {
+  if (employee.role !== 'Manager' && employee.manager?.toString() !== createdManager.toString() ) {
     throw new AppError(400, 'Assigned employee is not a direct report of the manager');
   }
 
@@ -296,7 +296,7 @@ export const updateTask = async ({
     throw new AppError(404, 'Assigned employee not found');
   }
 
-  if (employee.manager?.toString() !== managerId.toString()) {
+  if ( employee.role !== 'Manager' && employee.manager?.toString() !== managerId.toString()) {
     throw new AppError(403, 'You are not the manager of the assigned employee');
   }
 
