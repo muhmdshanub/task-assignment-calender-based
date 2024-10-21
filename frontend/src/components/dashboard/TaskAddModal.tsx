@@ -24,7 +24,7 @@ interface TaskModalProps {
   selectedDate: string;
   employees: Employee[];
   onClose: () => void;
-  onSubmit: (taskDetails: { date: string; employee: string; taskName: string }) => void;
+  onSubmit: (taskDetails: { date: string; assignedEmployee: string; taskName: string }) => void;
 }
 
 const TaskModal: React.FC<TaskModalProps> = ({ open, selectedDate, employees, onClose, onSubmit }) => {
@@ -41,7 +41,9 @@ const TaskModal: React.FC<TaskModalProps> = ({ open, selectedDate, employees, on
   };
 
   const handleSubmit = () => {
-    onSubmit({ date: selectedDate, employee: selectedEmployee, taskName });
+    onSubmit({ date: selectedDate, assignedEmployee: selectedEmployee, taskName });
+    setSelectedEmployee('')
+    setTaskName('')
     onClose();
   };
 

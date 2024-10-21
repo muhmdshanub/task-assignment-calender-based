@@ -6,9 +6,10 @@ interface TaskListProps {
   tasks: { taskName: string; date: string; assignedEmployee: string }[];
   onEdit: (taskDetails: any) => void; // Update type to accept task details
   onDelete: (taskDetails: any) => void; // Update type to accept task details
+  isManager: boolean,
 }
 
-const TaskList: React.FC<TaskListProps> = ({ tasks , onEdit, onDelete}) => {
+const TaskList: React.FC<TaskListProps> = ({ tasks , onEdit, onDelete, isManager}) => {
   return (
     <Box
       sx={{
@@ -28,6 +29,7 @@ const TaskList: React.FC<TaskListProps> = ({ tasks , onEdit, onDelete}) => {
             assignedEmployee={task.assignedEmployee}
             onEdit={() => onEdit({ ...task, _id: index.toString() })} // Pass the task details to onEdit
             onDelete={() => onDelete({ ...task, _id: index.toString() })} // Pass the task details to onDelete
+            isManager={isManager}
           />
         ))}
     </Box>

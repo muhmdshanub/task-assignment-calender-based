@@ -10,9 +10,10 @@ interface TaskCardProps {
   assignedEmployee: string;
   onEdit: () => void; 
   onDelete: () => void; 
+  isManager : boolean;
 }
 
-const TaskCardTile: React.FC<TaskCardProps> = ({ taskName, date, assignedEmployee, onEdit, onDelete }) => {
+const TaskCardTile: React.FC<TaskCardProps> = ({ taskName, date, assignedEmployee, onEdit, onDelete , isManager}) => {
   return (
     <Card sx={{ margin: '0.2rem 0', padding: '0', backgroundColor:'#d5d9f5' }}>
       <CardContent sx={{position:'relative'}}>
@@ -31,7 +32,9 @@ const TaskCardTile: React.FC<TaskCardProps> = ({ taskName, date, assignedEmploye
           </Typography>
 
         {/* Action Icons */}
-        <Box sx={{ display: 'flex', flexDirection:'column', position:'absolute' , right:0, top:0}}>
+        {
+          isManager && (
+            <Box sx={{ display: 'flex', flexDirection:'column', position:'absolute' , right:0, top:0}}>
             <IconButton onClick={onEdit} size="small" sx={{ marginLeft: '0.5rem' }}>
               <EditIcon fontSize="small" sx={{color:'#000000'}} />
             </IconButton>
@@ -39,6 +42,8 @@ const TaskCardTile: React.FC<TaskCardProps> = ({ taskName, date, assignedEmploye
               <DeleteIcon fontSize="small" sx={{color:'red'}} />
             </IconButton>
           </Box>
+          )
+        }
         </Box>
       </CardContent>
     </Card>

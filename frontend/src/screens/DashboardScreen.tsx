@@ -12,8 +12,9 @@ import TaskEditModal from '../components/dashboard/TaskEditModal';
 import DeleteTaskModal from '../components/dashboard/TaskDeleteModal';
 
 import { useLazyGetUsersManagedByCurrentUserQuery } from '../slices/apiSlices/usersApiSlice';
-import { Employee } from '../types/employeeUserData';
+import { useAddTaskMutation, useLazyGetTaskCountsByMonthForEmployeeQuery, useLazyGetTaskCountsByMonthForManagerQuery } from '../slices/apiSlices/taskApiSlice';
 
+import { Employee } from '../types/employeeUserData';
 
 
 
@@ -23,6 +24,17 @@ const DashboardScreen: React.FC = () => {
 
   // Lazy query hook for fetching users
   const [fetchUsers, { data : employeesData, error : employeesError, isLoading : employeesLoading }] = useLazyGetUsersManagedByCurrentUserQuery();
+
+  //api for adding a task
+  const [addTask, { isLoading : addTaskLoading, isSuccess: isAddTaskSuccess, data : addTaskData }] = useAddTaskMutation()
+
+  //api for fetching task count summary for the current year and month for both normal employee and manager
+  const [fetchTaskCountsForManager,{ data: managerTaskCountsData, error: managerTaskCountError }] = useLazyGetTaskCountsByMonthForManagerQuery();
+  const[fetchTaskCountsForEmployee, { data: employeeTaskCountsData, error: employeeTaskCountError }] = useLazyGetTaskCountsByMonthForEmployeeQuery();
+
+
+  //state for checking is manager permission
+  const [isManager, setIsManager] = useState<boolean>(userInfo.role === 'Manager' ? true : false)
 
   //fetching all the current user data that has been under this manager
   // State for year, month, and day
@@ -37,6 +49,9 @@ const DashboardScreen: React.FC = () => {
 
   //state for storing employee details
   const [employees, setEmployees] = useState<Employee[]>([])
+
+  //state for taskData for selected month
+  const [selectedMonthTaskData, setSelctedMonthData] = useState([])
 
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string>('');
@@ -53,6 +68,10 @@ const DashboardScreen: React.FC = () => {
   };
 
   const [selectedTask, setSelectedTask] = useState<typeof defaultTask>(defaultTask);
+
+  //state for current months task count summary
+
+  const [taskCountByMonth, setTaskCountByMonth] = useState<{ [date: string]: number }>({});
 
 
   //useEffect for fetching employee details
@@ -74,6 +93,30 @@ const DashboardScreen: React.FC = () => {
     const date = dayjs(`${year}-${month}-${day}`).format('YYYY-MM-DD');
     setSelectedDate(date);
   },[year, month, day,])
+
+  //use effect for fetching taskcount for current motha nd year for both manager and employee and updating the state
+  useEffect(()=>{
+    if(userInfo.role === 'Manager'){
+      fetchTaskCountsForManager({  year, month })
+    }else{
+      fetchTaskCountsForEmployee({  year, month })
+    }
+  },[year, month, fetchTaskCountsForManager, fetchTaskCountsForEmployee])
+
+  useEffect(()=>{
+    
+    if(userInfo.role === 'Manager' && managerTaskCountsData ){
+      
+      setTaskCountByMonth(managerTaskCountsData.data)
+
+    }else if(userInfo.role !== 'Manager' && employeeTaskCountsData){
+      setTaskCountByMonth(employeeTaskCountsData.data)
+    }
+  },[managerTaskCountsData, employeeTaskCountsData])
+
+
+
+
   
 
 
@@ -117,6 +160,14 @@ const DashboardScreen: React.FC = () => {
     setDaysInMonth(newDaysInMonth);
     setCalendarRows(newCalendarRows());
   }, [year, month]);
+
+  //sample useffect for handling the taskAdded data
+
+  useEffect(()=>{
+    if(isAddTaskSuccess ){
+      console.log(addTaskData.data)
+    }
+  },[isAddTaskSuccess, addTaskData])
 
   // Update year, month, and day when the calendar value changes
   const handleDateChange = (newValue: any) => {
@@ -165,10 +216,21 @@ const DashboardScreen: React.FC = () => {
     setAddModalOpen(false);
   };
 
-  const handleAddTaskSubmit = (taskDetails: { date: string; employee: string; taskName: string }) => {
-    // Sample submit function
-    console.log('Task submitted:', taskDetails);
-    // Here, you would typically call an API to save the task
+  const handleAddTaskSubmit = async (taskDetails: { date: string; assignedEmployee: string; taskName: string }) => {
+    
+    try{
+      
+      await addTask(taskDetails).unwrap()
+      console.log('Task submitted:');
+      alert("successfully added the task")
+    }catch(error){
+      console.log(error)
+      alert('failed to add task')
+    }
+     
+
+    
+
   };
 
   //functions for editing a task
@@ -284,6 +346,8 @@ const DashboardScreen: React.FC = () => {
               <CalendarTable year={year} month={month} day={day}
                calendarRows={calendarRows} onDayClick={handleDayClick} 
                handleOpenAddModal={handleOpenAddModal}
+               isManager={isManager} 
+               taskCountByMonth={taskCountByMonth}
                />
               
             </Paper>
@@ -309,7 +373,9 @@ const DashboardScreen: React.FC = () => {
               </Typography>
               
               {/* add task button */}
-              <Box sx={{ display: 'flex', justifyContent: 'flex-end', padding: '0.5rem' }}>
+              {
+                isManager && (
+                  <Box sx={{ display: 'flex', justifyContent: 'flex-end', padding: '0.5rem' }}>
                 <Button
                   variant="contained"
                   onClick={handleOpenAddModal}
@@ -331,11 +397,13 @@ const DashboardScreen: React.FC = () => {
                   <AddIcon />
                 </Button>
               </Box>
+                )
+              }
 
 
               {/* task list */}
               <Box sx={{height:'100%', overflowY:'auto'}}>
-                  <TaskList tasks={sampleTasks} onEdit={handleOpenEditModal}  onDelete={handleDeleteModalOpen}/>
+                  <TaskList tasks={sampleTasks} onEdit={handleOpenEditModal}  onDelete={handleDeleteModalOpen} isManager={isManager} />
               </Box>
 
             </Paper>
@@ -345,7 +413,7 @@ const DashboardScreen: React.FC = () => {
     </Box>
 
     <TaskModal
-      open={addModalOpen}
+      open={addModalOpen && isManager}
       selectedDate={selectedDate}
       employees={employees}
       onClose={handleCloseAddModal}
@@ -353,7 +421,7 @@ const DashboardScreen: React.FC = () => {
     />
 
     <TaskEditModal
-      open={editModalOpen}
+      open={editModalOpen && isManager}
 
       onClose={handleCloseEditModal}
       employees={employees}
@@ -362,7 +430,7 @@ const DashboardScreen: React.FC = () => {
     />
 
       <DeleteTaskModal
-          open={deleteModalOpen}
+          open={deleteModalOpen && isManager}
           onClose={handleCloseDeleteModal}
           onDelete={handleDeleteTask}
           taskName={selectedTask.taskName}

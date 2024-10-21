@@ -5,15 +5,15 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { userLogout } from '../slices/userAuthSlice';
 import { useLogoutMutation } from '../slices/apiSlices/authApiSlice';
-import ErrorAlertDialog from './ErrorAlertDialog';
+
 
 const Header: React.FC = () => {
   const userInfo = useSelector((state: any) => state.userAuth.userInfo);
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const [openError, setOpenError] = useState(false);
-  const [logout, { isLoading, isError }] = useLogoutMutation(); 
+  
+  const [logout, { isLoading, }] = useLogoutMutation(); 
   const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null);
 
   const handleOpenUserMenu = (event: React.MouseEvent<HTMLElement>) => {
@@ -30,16 +30,16 @@ const Header: React.FC = () => {
       
     } catch (error) {
       console.error('Logout failed: ', error);
-      setOpenError(true);
+      
     }finally{
+      handleCloseUserMenu()
       dispatch(userLogout());
       navigate('/');
+
     }
   };
 
-  const handleCloseErrorDialog = () => {
-    setOpenError(false);
-  };
+  
 
   if (!userInfo) {
     return (
@@ -86,14 +86,7 @@ const Header: React.FC = () => {
             </Menu>
           </Box>
         </Toolbar>
-        {isError && (
-          <ErrorAlertDialog
-            open={openError}
-            handleClose={handleCloseErrorDialog}
-            title={"Failed"}
-            message={"There was an error while logging out"}
-          />
-        )}
+        
       </AppBar>
     );
   }
