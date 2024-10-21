@@ -315,3 +315,23 @@ export const updateTask = async ({
 
   return updatedTask;
 };
+
+export const deleteTask = async (
+  taskId: mongoose.Types.ObjectId | string,
+  managerId: mongoose.Types.ObjectId | string
+) => {
+  // Check if task exists and is owned by the manager
+  const task = await Task.findOne({
+    _id: taskId,
+    createdManager: managerId,
+  });
+
+  if (!task) {
+    throw new AppError(404, 'Task not found or you are not authorized to delete this task');
+  }
+
+  // Delete the task
+  await Task.findByIdAndDelete(taskId);
+
+  return { message: 'Task deleted successfully' };
+};

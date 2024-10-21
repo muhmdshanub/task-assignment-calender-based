@@ -68,6 +68,14 @@ export const taskApiSlice = apiSlice.injectEndpoints({
       invalidatesTags: ['Tasks'], // Invalidate relevant cache entries after this mutation
     }),
 
+    deleteTask: builder.mutation<{ message: string }, string>({
+      query: (taskId) => ({
+        url: `${TASK_URL}/${taskId}`, // Ensure this matches your backend route for deleting the task
+        method: 'DELETE', // Use DELETE for deletion
+      }),
+      invalidatesTags: ['Tasks'], // Invalidate relevant cache entries after deletion
+    }),
+
     
   }),
 });
@@ -80,5 +88,6 @@ export const {
   useLazyGetTasksByMonthForEmployeeQuery,
   useLazyGetTasksByMonthForManagerQuery ,
   useUpdateTaskMutation,
+  useDeleteTaskMutation,
 
 } = taskApiSlice;

@@ -1,6 +1,15 @@
 // controllers/taskController.ts
 import { Request, Response, NextFunction } from 'express';
-import { createTask , updateTask, getTaskCountsByMonthForManager, getTaskCountsByMonthForEmployee, fetchTasksByDateForManager, fetchTasksByDateForEmployee} from '../services/taskService';
+import {
+  createTask , 
+  updateTask, 
+  getTaskCountsByMonthForManager, 
+  getTaskCountsByMonthForEmployee, 
+  fetchTasksByDateForManager, 
+  fetchTasksByDateForEmployee,
+  deleteTask,
+
+} from '../services/taskService';
 import AppError from '../utils/appError'; // Import the AppError class
 import mongoose from 'mongoose';
 
@@ -200,12 +209,12 @@ export const getTasksByDateForEmployee = async (req: Request, res: Response, nex
 
 // @desc update a task from manager
 // @route PUT /api/tasks/:taskId
-// @access Private for employee
+// @access Private for manager
 
 export const updateTaskById = async (req: Request, res: Response, next: NextFunction) => {
   try {
 
-    console.log("recieved here")
+    
     if (!req.user) {
       return next(new AppError(401, 'Not authorized'));
     }
@@ -233,5 +242,33 @@ export const updateTaskById = async (req: Request, res: Response, next: NextFunc
     });
   } catch (error) {
     next(new AppError(500, 'An unexpected error occurred while updating the task'));
+  }
+};
+
+// @desc update a task from manager
+// @route DELETE /api/tasks/:taskId
+// @access Private for manager
+
+export const deleteTaskController = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { taskId } = req.params;
+
+    if (!req.user) {
+      return next(new AppError(401, 'Not authorized'));
+    }
+
+    const managerId = req.user._id; // Assume req.user._id contains the manager's ID from authentication
+
+    // Call service to delete the task
+    const result = await deleteTask(taskId, managerId);
+
+    // Send success response
+    res.status(200).json(result);
+  } catch (error) {
+    // If it's an instance of AppError, use it to forward to error handler
+    if (error instanceof AppError) {
+      return next(error); // Pass custom error to the global error handler
+    }
+    next(new AppError(500, 'An unexpected error occurred while deleting the task.'));
   }
 };

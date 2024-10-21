@@ -31,6 +31,12 @@ export const updateTaskValidator = [
     .withMessage('Invalid date format, must be in ISO 8601 format (yyyy-mm-dd)'),
 ];
 
+export const validateDeleteTask = [
+  param('taskId')
+    .isMongoId()
+    .withMessage('Invalid Task ID'),
+];
+
 
 import { query } from 'express-validator';
 

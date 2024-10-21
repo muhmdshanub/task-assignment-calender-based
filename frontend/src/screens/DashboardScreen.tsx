@@ -20,6 +20,7 @@ import {
    useLazyGetTasksByMonthForEmployeeQuery,
    useLazyGetTasksByMonthForManagerQuery,
    useUpdateTaskMutation,
+   useDeleteTaskMutation,
 } from '../slices/apiSlices/taskApiSlice';
 
 import { Employee } from '../types/employeeUserData';
@@ -40,6 +41,9 @@ const DashboardScreen: React.FC = () => {
 
   //api for updating a task
   const [updateTask, { isLoading : updateTaskLoading, isSuccess: isUpdateTaskSuccess, data : updateTaskData }] = useUpdateTaskMutation()
+
+  //api for deleting a task
+  const [deleteTask,{isLoading:deleteTaskLoading, isSuccess: isDeleteTaskSuccess, data : deleteTaskData}] = useDeleteTaskMutation()
 
   //api for fetching task count summary for the current year and month for both normal employee and manager
   const [fetchTaskCountsForManager,{ data: managerTaskCountsData, error: managerTaskCountError }] = useLazyGetTaskCountsByMonthForManagerQuery();
@@ -199,7 +203,7 @@ const DashboardScreen: React.FC = () => {
   //sample useffect for handling the taskAdded data
 
   useEffect( () =>{
-    if(isAddTaskSuccess || isUpdateTaskSuccess ){
+    if(isAddTaskSuccess || isUpdateTaskSuccess || isDeleteTaskSuccess){
       if(userInfo.role === 'Manager'){
          fetchTaskCountsForManager({year, month});
          fetchTasksForManager({year, month, day})
@@ -209,7 +213,7 @@ const DashboardScreen: React.FC = () => {
         fetchTasksForEmployee({year, month, day})
       }
     }
-  },[isAddTaskSuccess, isUpdateTaskSuccess])
+  },[isAddTaskSuccess, isUpdateTaskSuccess, isDeleteTaskSuccess])
 
   // Update year, month, and day when the calendar value changes
   const handleDateChange = (newValue: any) => {
@@ -264,7 +268,7 @@ const DashboardScreen: React.FC = () => {
       
       await addTask(taskDetails).unwrap()
       
-      alert("successfully added the task")
+      
     }catch(error : any){
       const apiError = error.data as ErrorApiResponse;
       setErrorDialogOpen(true);
@@ -319,12 +323,13 @@ const DashboardScreen: React.FC = () => {
     setSelectedTask(null)
   };
 
-  const handleDeleteTask = () => {
-    // Sample submit function
-    console.log('Task Deleted:', selectedTask?.taskName, selectedTask?._id);
-    // Here, you would typically call an API to save the task
+  const handleDeleteTask = async () => {
+    
     try {
-      
+      if(selectedTask === null){
+        return;
+      }
+      await deleteTask(selectedTask?._id)
     } catch (error : any) {
 
       const apiError = error.data as ErrorApiResponse;
