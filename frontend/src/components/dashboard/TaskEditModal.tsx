@@ -45,6 +45,11 @@ const TaskEditModal: React.FC<TaskEditModalProps> = ({ open, onClose, onSubmit, 
   }, [open, taskDetails]);
 
   const handleSubmit = () => {
+
+    if(!dateLocal || taskNameLocal.trim.length < 1 || assignedEmployeeLocal.trim().length < 1){
+      return;
+    }
+
     const formattedDate = dateLocal?.format('YYYY-MM-DD') || '';
     onSubmit({ date: formattedDate, taskName : taskNameLocal, assignedEmployee : assignedEmployeeLocal, taskId: taskDetails._id });
   };

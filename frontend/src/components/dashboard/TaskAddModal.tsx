@@ -41,6 +41,9 @@ const TaskModal: React.FC<TaskModalProps> = ({ open, selectedDate, employees, on
   };
 
   const handleSubmit = () => {
+    if(selectedDate.trim().length < 1 || taskName.trim.length < 1 || selectedEmployee.trim().length < 1){
+      return;
+    }
     onSubmit({ date: selectedDate, assignedEmployee: selectedEmployee, taskName });
     setSelectedEmployee('')
     setTaskName('')
