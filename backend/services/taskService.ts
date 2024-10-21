@@ -140,3 +140,136 @@ export const getTaskCountsByMonthForEmployee = async (employeeId: mongoose.Types
   }
 };
 
+
+// Utility function to generate start and end of the day for date matching
+const getStartAndEndOfDay = (year: number, month: number, day: number) => {
+  const startOfDay = new Date(year, month - 1, day); // Midnight of the specified day
+  const endOfDay = new Date(year, month - 1, day + 1); // Midnight of the next day
+  return { startOfDay, endOfDay };
+};
+
+// Fetch tasks by date for a manager with user lookup
+export const fetchTasksByDateForManager = async (
+  managerId: mongoose.Types.ObjectId,
+  year: number,
+  month: number,
+  day: number
+) => {
+  const { startOfDay, endOfDay } = getStartAndEndOfDay(year, month, day);
+
+  const tasks = await Task.aggregate([
+    {
+      $match: {
+        createdManager: managerId,
+        date: {
+          $gte: startOfDay,
+          $lt: endOfDay,
+        },
+      },
+    },
+    // Lookup the 'createdManager' field from the 'User' collection
+    {
+      $lookup: {
+        from: 'users', // The collection where users are stored
+        localField: 'createdManager',
+        foreignField: '_id',
+        as: 'createdManagerDetails',
+      },
+    },
+    // Lookup the 'assignedEmployee' field from the 'User' collection
+    {
+      $lookup: {
+        from: 'users',
+        localField: 'assignedEmployee',
+        foreignField: '_id',
+        as: 'assignedEmployeeDetails',
+      },
+    },
+    // Unwind the arrays to get single objects
+    { $unwind: '$createdManagerDetails' },
+    { $unwind: '$assignedEmployeeDetails' },
+    // Project only the required fields
+    {
+      $project: {
+        _id: 1,
+        taskName: 1,
+        date: 1,
+        createdAt: 1,
+        updatedAt: 1,
+        createdManager: {
+          _id: '$createdManagerDetails._id',
+          name: '$createdManagerDetails.name', // Assuming User model has 'name' field
+        },
+        assignedEmployee: {
+          _id: '$assignedEmployeeDetails._id',
+          name: '$assignedEmployeeDetails.name', // Assuming User model has 'name' field
+        },
+      },
+    },
+  ]);
+
+  return tasks; // Return tasks with user name details
+};
+
+// Fetch tasks by date for an employee with user lookup
+export const fetchTasksByDateForEmployee = async (
+  employeeId: mongoose.Types.ObjectId,
+  year: number,
+  month: number,
+  day: number
+) => {
+  const { startOfDay, endOfDay } = getStartAndEndOfDay(year, month, day);
+
+  const tasks = await Task.aggregate([
+    {
+      $match: {
+        assignedEmployee: employeeId,
+        date: {
+          $gte: startOfDay,
+          $lt: endOfDay,
+        },
+      },
+    },
+    // Lookup the 'createdManager' field from the 'User' collection
+    {
+      $lookup: {
+        from: 'users',
+        localField: 'createdManager',
+        foreignField: '_id',
+        as: 'createdManagerDetails',
+      },
+    },
+    // Lookup the 'assignedEmployee' field from the 'User' collection
+    {
+      $lookup: {
+        from: 'users',
+        localField: 'assignedEmployee',
+        foreignField: '_id',
+        as: 'assignedEmployeeDetails',
+      },
+    },
+    // Unwind the arrays to get single objects
+    { $unwind: '$createdManagerDetails' },
+    { $unwind: '$assignedEmployeeDetails' },
+    // Project only the required fields
+    {
+      $project: {
+        _id: 1,
+        taskName: 1,
+        date: 1,
+        createdAt: 1,
+        updatedAt: 1,
+        createdManager: {
+          _id: '$createdManagerDetails._id',
+          name: '$createdManagerDetails.name',
+        },
+        assignedEmployee: {
+          _id: '$assignedEmployeeDetails._id',
+          name: '$assignedEmployeeDetails.name',
+        },
+      },
+    },
+  ]);
+
+  return tasks; // Return tasks with user name details
+};

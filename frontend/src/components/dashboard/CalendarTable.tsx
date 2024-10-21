@@ -35,9 +35,7 @@ const CalendarTable: React.FC<CalendarTableProps> = ({
   const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 
-console.log(taskCountByMonth)
 
-console.log(calendarRows)
   return (
     <>
         <TableContainer

@@ -49,3 +49,16 @@ export const validateGetTaskCountsForEmployee = [
     .notEmpty()
     .withMessage('Month is required'),
 ];
+
+
+export const getTasksByDateValidation = [
+  query('year')
+    .isInt({ min: 2000, max: 2100 }) // Adjust range as needed
+    .withMessage('Year must be a valid integer between 2000 and 2100'),
+  query('month')
+    .isInt({ min: 1, max: 12 })
+    .withMessage('Month must be a valid integer between 1 and 12'),
+  query('day')
+    .isInt({ min: 1, max: 31 })
+    .withMessage('Day must be a valid integer between 1 and 31'),
+];

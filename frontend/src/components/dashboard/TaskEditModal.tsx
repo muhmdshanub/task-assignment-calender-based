@@ -16,33 +16,34 @@ import { DateField } from '@mui/x-date-pickers/DateField';
 import dayjs, { Dayjs } from 'dayjs';
 
 import { Employee } from '../../types/employeeUserData';
+import { Task } from '../../types/taskTypes';
 
 
 interface TaskEditModalProps {
   open: boolean;
   onClose: () => void;
-  onSubmit: (taskDetails: { date: string; taskName: string; assignedEmployee: string; _id: string }) => void;
-  taskDetails: { date: string; taskName: string; assignedEmployee: string; _id: string };
+  onSubmit: (taskDetails: {taskName: string, _id:string, assignedEmployee: string, date: string}) => void;
+  taskDetails: Task;
   employees: Employee[]; // Array of employees for the select field
 }
 
 const TaskEditModal: React.FC<TaskEditModalProps> = ({ open, onClose, onSubmit, taskDetails, employees }) => {
-  const [date, setDate] = useState<Dayjs | null>(dayjs(taskDetails.date));
-  const [taskName, setTaskName] = useState(taskDetails.taskName);
-  const [assignedEmployee, setAssignedEmployee] = useState(taskDetails.assignedEmployee);
+  const [dateLocal, setDateLocal] = useState<Dayjs | null>(dayjs(taskDetails.date));
+  const [taskNameLocal, setTaskNameLocal] = useState(taskDetails.taskName);
+  const [assignedEmployeeLocal, setAssignedEmployeeLocal] = useState(taskDetails.assignedEmployee._id);
 
   useEffect(() => {
     // Reset the fields when the modal opens
     if (open) {
-      setDate(dayjs(taskDetails.date));
-      setTaskName(taskDetails.taskName);
-      setAssignedEmployee(taskDetails.assignedEmployee);
+      setDateLocal(dayjs(taskDetails.date));
+      setTaskNameLocal(taskDetails.taskName);
+      setAssignedEmployeeLocal(taskDetails.assignedEmployee._id);
     }
   }, [open, taskDetails]);
 
   const handleSubmit = () => {
-    const formattedDate = date?.format('YYYY-MM-DD') || '';
-    onSubmit({ date: formattedDate, taskName, assignedEmployee, _id: taskDetails._id });
+    const formattedDate = dateLocal?.format('YYYY-MM-DD') || '';
+    onSubmit({ date: formattedDate, taskName : taskNameLocal, assignedEmployee : assignedEmployeeLocal, _id: taskDetails._id });
   };
 
   return (
@@ -52,8 +53,8 @@ const TaskEditModal: React.FC<TaskEditModalProps> = ({ open, onClose, onSubmit, 
         <LocalizationProvider dateAdapter={AdapterDayjs}>
           <DateField
             label="Date"
-            value={date}
-            onChange={(newValue) => setDate(newValue)}
+            value={dateLocal}
+            onChange={(newValue) => setDateLocal(newValue)}
             format="YYYY-MM-DD"
             fullWidth
             sx={{mb:'0.5rem'}}
@@ -61,16 +62,16 @@ const TaskEditModal: React.FC<TaskEditModalProps> = ({ open, onClose, onSubmit, 
         </LocalizationProvider>
         <TextField
           label="Task Name"
-          value={taskName}
-          onChange={(e) => setTaskName(e.target.value)}
+          value={taskNameLocal}
+          onChange={(e) => setTaskNameLocal(e.target.value)}
           fullWidth
           sx={{mb:'0.5rem'}}
         />
         <Select
           label="Assigned Employee"
-          value={assignedEmployee}
-          defaultValue={assignedEmployee}
-          onChange={(e) => setAssignedEmployee(e.target.value as string)}
+          value={assignedEmployeeLocal}
+          defaultValue={assignedEmployeeLocal}
+          onChange={(e) => setAssignedEmployeeLocal(e.target.value as string)}
           fullWidth
           sx={{mb:'0.5rem'}}
         >

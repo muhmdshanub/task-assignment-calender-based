@@ -1,6 +1,6 @@
 // src/slices/apiSlices/taskApiSlice.ts
 import { apiSlice } from './apiSlice';
-import {TaskCountResponse,  GetTaskCountsQueryParams, GetTaskCountsForEmployeeQueryParams } from '../../types/taskTypes'; // Adjust the import path as necessary
+import {TaskCountResponse,  GetTaskCountsQueryParams, GetTaskCountsForEmployeeQueryParams, TaskListResponse, GetTasksForManagerQueryParams } from '../../types/taskTypes'; // Adjust the import path as necessary
 
 
 // Define the base URL for tasks
@@ -38,9 +38,36 @@ export const taskApiSlice = apiSlice.injectEndpoints({
       providesTags: ['Tasks'], // Update this to match your tag setup
     }),
 
+    // New endpoint to get tasks for a manager by month
+    getTasksByMonthForManager: builder.query<TaskListResponse, GetTasksForManagerQueryParams>({
+      query: ({ year, month , day}) => ({
+        url: `${TASK_URL}/manager`, // Ensure this matches your backend route for fetching tasks
+        method: 'GET',
+        params: { year, month, day }, // Pass the parameters in the query
+      }),
+      providesTags: ['Tasks'], // Update this to match your tag setup
+    }),
+
+    // New endpoint to get tasks for a manager by month
+    getTasksByMonthForEmployee: builder.query<TaskListResponse, GetTasksForManagerQueryParams>({
+      query: ({ year, month , day}) => ({
+        url: `${TASK_URL}/employee`, // Ensure this matches your backend route for fetching tasks
+        method: 'GET',
+        params: { year, month, day }, // Pass the parameters in the query
+      }),
+      providesTags: ['Tasks'], // Update this to match your tag setup
+    }),
+
     
   }),
 });
 
 // Export hooks for usage in functional components
-export const { useAddTaskMutation, useLazyGetTaskCountsByMonthForManagerQuery, useLazyGetTaskCountsByMonthForEmployeeQuery } = taskApiSlice;
+export const {
+  useAddTaskMutation,
+  useLazyGetTaskCountsByMonthForManagerQuery,
+  useLazyGetTaskCountsByMonthForEmployeeQuery,
+  useLazyGetTasksByMonthForEmployeeQuery,
+  useLazyGetTasksByMonthForManagerQuery ,
+
+} = taskApiSlice;

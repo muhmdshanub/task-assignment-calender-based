@@ -12,9 +12,15 @@ import TaskEditModal from '../components/dashboard/TaskEditModal';
 import DeleteTaskModal from '../components/dashboard/TaskDeleteModal';
 
 import { useLazyGetUsersManagedByCurrentUserQuery } from '../slices/apiSlices/usersApiSlice';
-import { useAddTaskMutation, useLazyGetTaskCountsByMonthForEmployeeQuery, useLazyGetTaskCountsByMonthForManagerQuery } from '../slices/apiSlices/taskApiSlice';
+import { useAddTaskMutation, 
+  useLazyGetTaskCountsByMonthForEmployeeQuery,
+   useLazyGetTaskCountsByMonthForManagerQuery ,
+   useLazyGetTasksByMonthForEmployeeQuery,
+   useLazyGetTasksByMonthForManagerQuery,
+} from '../slices/apiSlices/taskApiSlice';
 
 import { Employee } from '../types/employeeUserData';
+import { Task } from '../types/taskTypes';
 
 
 
@@ -32,6 +38,10 @@ const DashboardScreen: React.FC = () => {
   const [fetchTaskCountsForManager,{ data: managerTaskCountsData, error: managerTaskCountError }] = useLazyGetTaskCountsByMonthForManagerQuery();
   const[fetchTaskCountsForEmployee, { data: employeeTaskCountsData, error: employeeTaskCountError }] = useLazyGetTaskCountsByMonthForEmployeeQuery();
 
+  //api for fetching tasks list for the current selected date (day, month, year)
+
+  const [fetchTasksForManager,{data:managerTasksData, error:managerTasksError}] = useLazyGetTasksByMonthForManagerQuery()
+  const [fetchTasksForEmployee,{data:employeeTasksData, error:employeeTasksError}] = useLazyGetTasksByMonthForEmployeeQuery()
 
   //state for checking is manager permission
   const [isManager, setIsManager] = useState<boolean>(userInfo.role === 'Manager' ? true : false)
@@ -60,18 +70,20 @@ const DashboardScreen: React.FC = () => {
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
 
-  const defaultTask = {
-    date: '',
-    taskName: '',
-    assignedEmployee: '',
-    _id: '',
-  };
+  // const defaultTask = {
+  //   date: '',
+  //   taskName: '',
+  //   assignedEmployee: '',
+  //   _id: '',
+  // };
 
-  const [selectedTask, setSelectedTask] = useState<typeof defaultTask>(defaultTask);
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
   //state for current months task count summary
-
   const [taskCountByMonth, setTaskCountByMonth] = useState<{ [date: string]: number }>({});
+
+  //state for current date tasks list
+  const [tasksByDate, setTasksByDate] = useState<Task[]>([])
 
 
   //useEffect for fetching employee details
@@ -94,7 +106,7 @@ const DashboardScreen: React.FC = () => {
     setSelectedDate(date);
   },[year, month, day,])
 
-  //use effect for fetching taskcount for current motha nd year for both manager and employee and updating the state
+  //use effect for fetching taskcount for current month  and year for both manager and employee and updating the state
   useEffect(()=>{
     if(userInfo.role === 'Manager'){
       fetchTaskCountsForManager({  year, month })
@@ -115,9 +127,26 @@ const DashboardScreen: React.FC = () => {
   },[managerTaskCountsData, employeeTaskCountsData])
 
 
+  //use effect for fetching tasks current day and setting to state
+  useEffect(()=>{
+    if(userInfo.role === 'Manager'){
+      fetchTasksForManager({  year, month, day })
+      console.log("should called the api")
+    }else{
+      fetchTasksForEmployee({  year, month, day })
+    }
+  },[year, month, day, fetchTasksForEmployee, fetchTasksForManager])
 
+  useEffect(()=>{
+    
+    if(userInfo.role === 'Manager' && managerTasksData ){
+      console.log("should updated the tasks state")
+      setTasksByDate(managerTasksData.data)
 
-  
+    }else if(userInfo.role !== 'Manager' && employeeTasksData){
+      setTasksByDate(employeeTasksData.data)
+    }
+  },[managerTasksData, employeeTasksData])
 
 
   // Recalculate firstDayOfMonth, daysInMonth, and calendarRows when year or month changes
@@ -234,7 +263,7 @@ const DashboardScreen: React.FC = () => {
   };
 
   //functions for editing a task
-  const handleOpenEditModal = (taskDetails: { date: string; assignedEmployee: string; taskName: string, _id:string }) => {
+  const handleOpenEditModal = (taskDetails: Task) => {
     
     setSelectedTask(taskDetails)
     setEditModalOpen(true);
@@ -242,10 +271,10 @@ const DashboardScreen: React.FC = () => {
 
   const handleCloseEditModal = () => {
     setEditModalOpen(false);
-    setSelectedTask(defaultTask)
+    setSelectedTask(null)
   };
 
-  const handleEditTaskSubmit = (taskDetails: { date: string; assignedEmployee: string; taskName: string, _id:string }) => {
+  const handleEditTaskSubmit = (taskDetails: {taskName: string, _id:string, assignedEmployee: string, date: string}) => {
     // Sample submit function
     console.log('Task Edited:', taskDetails);
     // Here, you would typically call an API to save the task
@@ -254,7 +283,7 @@ const DashboardScreen: React.FC = () => {
 
   //function for deleting a task
 
-  const handleDeleteModalOpen = (taskDetails: { date: string; assignedEmployee: string; taskName: string, _id:string }) => {
+  const handleDeleteModalOpen = (taskDetails: Task) => {
     
     setSelectedTask(taskDetails)
     setDeleteModalOpen(true);
@@ -262,12 +291,12 @@ const DashboardScreen: React.FC = () => {
 
   const handleCloseDeleteModal = () => {
     setDeleteModalOpen(false);
-    setSelectedTask(defaultTask)
+    setSelectedTask(null)
   };
 
   const handleDeleteTask = () => {
     // Sample submit function
-    console.log('Task Deleted:', selectedTask.taskName, selectedTask._id);
+    console.log('Task Deleted:', selectedTask?.taskName, selectedTask?._id);
     // Here, you would typically call an API to save the task
   };
 
@@ -283,159 +312,186 @@ const DashboardScreen: React.FC = () => {
 
   
   return (
-
     <>
-    <Box 
-      display="flex" 
-      flexDirection="column" 
-      overflow="hidden" // Prevent content from overflowing outside
-      style={{padding:'0.2rem',height:'100%', width:'100%'}}
-    >
-      {/* AppBar at the top */}
-      {/* <AppBar position="static" sx={{ height: '30px', backgroundColor: 'white', border: '1px solid black', marginBottom:'0.2rem' }}>
+      <Box
+        display="flex"
+        flexDirection="column"
+        overflow="hidden" // Prevent content from overflowing outside
+        style={{ padding: "0.2rem", height: "100%", width: "100%" }}
+      >
+        {/* AppBar at the top */}
+        {/* <AppBar position="static" sx={{ height: '30px', backgroundColor: 'white', border: '1px solid black', marginBottom:'0.2rem' }}>
         <Typography variant="h6" sx={{ color: 'black', padding: '0px',  }}>
           Dashboard
         </Typography>
       </AppBar> */}
 
-      {/* Main Content Area */}
-      <Box display="flex"  overflow="hidden" sx={{height:'100%', width:'100%'}}> {/* Use flexGrow to fill remaining height */}
-        <Grid container spacing={1}  sx={{  padding:'0', height:'100%' }}>
-          {/* First Rectangle (2/12 width) */}
-          <Grid item md={3} >
-            <Paper
-              elevation={1}
-              sx={{ 
-                display: 'flex', 
-                flexDirection: 'column', 
-                height:'100%',
-                boxSizing: 'border-box', 
-                padding: 0, 
-                backgroundColor: '#ffffff', 
-                border: '0px solid black' ,
-               
-              }}
-            >
-             
-              {/* Content for Rectangle 1 */}
-              <CustomCalendar 
+        {/* Main Content Area */}
+        <Box
+          display="flex"
+          overflow="hidden"
+          sx={{ height: "100%", width: "100%" }}
+        >
+          {" "}
+          {/* Use flexGrow to fill remaining height */}
+          <Grid container spacing={1} sx={{ padding: "0", height: "100%" }}>
+            {/* First Rectangle (2/12 width) */}
+            <Grid item md={3}>
+              <Paper
+                elevation={1}
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  height: "100%",
+                  boxSizing: "border-box",
+                  padding: 0,
+                  backgroundColor: "#ffffff",
+                  border: "0px solid black",
+                }}
+              >
+                {/* Content for Rectangle 1 */}
+                <CustomCalendar
                   year={year}
                   month={month}
                   day={day}
                   onDateChange={handleDateChange}
-              />
+                />
+              </Paper>
+            </Grid>
 
-            </Paper>
-          </Grid>
+            {/* Center Rectangle (8/12 width) */}
+            <Grid item xs={8} md={6} sx={{ height: "100%", width: "100%" }}>
+              <Paper
+                elevation={1}
+                sx={{
+                  display: "flex",
+                  height: "100%",
+                  boxSizing: "border-box",
+                  padding: "0rem",
+                  paddingBottom: "0",
+                  backgroundColor: "#ffffff",
+                  border: "1px solid black",
+                }}
+              >
+                {/* Content for Center Rectangle */}
+                <CalendarTable
+                  year={year}
+                  month={month}
+                  day={day}
+                  calendarRows={calendarRows}
+                  onDayClick={handleDayClick}
+                  handleOpenAddModal={handleOpenAddModal}
+                  isManager={isManager}
+                  taskCountByMonth={taskCountByMonth}
+                />
+              </Paper>
+            </Grid>
 
-          {/* Center Rectangle (8/12 width) */}
-          <Grid item xs={8} md={6} sx={{height:'100%', width:'100%'}}>
-            <Paper
-              elevation={1}
-              sx={{ 
-                display: 'flex', 
-                height:'100%',
-                boxSizing: 'border-box', 
-                padding: '0rem',
-                paddingBottom:'0', 
-                backgroundColor: '#ffffff', 
-                border: '1px solid black' 
-              }}
-            >
-              {/* Content for Center Rectangle */}
-              <CalendarTable year={year} month={month} day={day}
-               calendarRows={calendarRows} onDayClick={handleDayClick} 
-               handleOpenAddModal={handleOpenAddModal}
-               isManager={isManager} 
-               taskCountByMonth={taskCountByMonth}
-               />
-              
-            </Paper>
-          </Grid>
-
-          {/* Third Rectangle (2/12 width) */}
-          <Grid item xs={2} md={3} sx={{height:'100%', width:'100%'}}>
-            <Paper
-              elevation={1}
-              sx={{ 
-                display: 'flex', 
-                flexDirection: 'column', 
-                maxHeight: '100%', 
-                boxSizing: 'border-box', 
-                padding: 0, 
-                backgroundColor: '#ffffff', 
-                border: '1px solid black' 
-              }}
-            >
-              {/* Content for Rectangle 3 */}
-              <Typography variant="subtitle1" sx={{display:'flex',width:'100%', backgroundColor:'#bceef7', marginTop:0, justifyContent:'center', justifyItems:'center'}} >
-                Tasks
-              </Typography>
-              
-              {/* add task button */}
-              {
-                isManager && (
-                  <Box sx={{ display: 'flex', justifyContent: 'flex-end', padding: '0.5rem' }}>
-                <Button
-                  variant="contained"
-                  onClick={handleOpenAddModal}
+            {/* Third Rectangle (2/12 width) */}
+            <Grid item xs={2} md={3} sx={{ height: "100%", width: "100%" }}>
+              <Paper
+                elevation={1}
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  height: "100%",
+                  boxSizing: "border-box",
+                  padding: 0,
+                  backgroundColor: "#ffffff",
+                  border: "1px solid black",
+                }}
+              >
+                {/* Content for Rectangle 3 */}
+                <Typography
+                  variant="subtitle1"
                   sx={{
-                    backgroundColor: '#00bcd4',
-                    borderRadius: '50px', // Keep button shape rounded but allow for text
-                    padding: '0.5rem 1.5rem', // Adjust padding for the text
-                    textTransform: 'none', // Keep the text as it is (no uppercase)
-                    '&:hover': {
-                      backgroundColor: '#008c9e', // Change color on hover
-                    },
-                    display: 'flex',
-                    alignItems: 'center', // Align text and icon vertically
+                    display: "flex",
+                    width: "100%",
+                    backgroundColor: "#bceef7",
+                    marginTop: 0,
+                    justifyContent: "center",
+                    justifyItems: "center",
                   }}
                 >
-                  <Typography variant="button" sx={{ marginRight: '0.5rem', fontWeight: 'bold' }}>
-                    Add Task
-                  </Typography>
-                  <AddIcon />
-                </Button>
-              </Box>
-                )
-              }
+                  Tasks
+                </Typography>
 
+                {/* add task button */}
+                {isManager && (
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "flex-end",
+                      padding: "0.5rem",
+                    }}
+                  >
+                    <Button
+                      variant="contained"
+                      onClick={handleOpenAddModal}
+                      sx={{
+                        backgroundColor: "#00bcd4",
+                        borderRadius: "50px", // Keep button shape rounded but allow for text
+                        padding: "0.5rem 1.5rem", // Adjust padding for the text
+                        textTransform: "none", // Keep the text as it is (no uppercase)
+                        "&:hover": {
+                          backgroundColor: "#008c9e", // Change color on hover
+                        },
+                        display: "flex",
+                        alignItems: "center", // Align text and icon vertically
+                      }}
+                    >
+                      <Typography
+                        variant="button"
+                        sx={{ marginRight: "0.5rem", fontWeight: "bold" }}
+                      >
+                        Add Task
+                      </Typography>
+                      <AddIcon />
+                    </Button>
+                  </Box>
+                )}
 
-              {/* task list */}
-              <Box sx={{height:'100%', overflowY:'auto'}}>
-                  <TaskList tasks={sampleTasks} onEdit={handleOpenEditModal}  onDelete={handleDeleteModalOpen} isManager={isManager} />
-              </Box>
-
-            </Paper>
+                {/* task list */}
+                <Box sx={{ height: "100%", overflowY: "auto" }}>
+                  <TaskList
+                    tasks={tasksByDate}
+                    onEdit={handleOpenEditModal}
+                    onDelete={handleDeleteModalOpen}
+                    isManager={isManager}
+                  />
+                </Box>
+              </Paper>
+            </Grid>
           </Grid>
-        </Grid>
+        </Box>
       </Box>
-    </Box>
 
-    <TaskModal
-      open={addModalOpen && isManager}
-      selectedDate={selectedDate}
-      employees={employees}
-      onClose={handleCloseAddModal}
-      onSubmit={handleAddTaskSubmit}
-    />
+      <TaskModal
+        open={addModalOpen && isManager}
+        selectedDate={selectedDate}
+        employees={employees}
+        onClose={handleCloseAddModal}
+        onSubmit={handleAddTaskSubmit}
+      />
 
-    <TaskEditModal
-      open={editModalOpen && isManager}
+      {isManager && selectedTask !== null && (
+        <>
+          <TaskEditModal
+            open={editModalOpen}
+            onClose={handleCloseEditModal}
+            employees={employees}
+            taskDetails={selectedTask}
+            onSubmit={handleEditTaskSubmit}
+          />
 
-      onClose={handleCloseEditModal}
-      employees={employees}
-      taskDetails={selectedTask}
-      onSubmit={handleEditTaskSubmit}
-    />
-
-      <DeleteTaskModal
-          open={deleteModalOpen && isManager}
-          onClose={handleCloseDeleteModal}
-          onDelete={handleDeleteTask}
-          taskName={selectedTask.taskName}
-        />
-
+          <DeleteTaskModal
+            open={deleteModalOpen && isManager}
+            onClose={handleCloseDeleteModal}
+            onDelete={handleDeleteTask}
+            taskName={selectedTask.taskName}
+          />
+        </>
+      )}
     </>
   );
 };

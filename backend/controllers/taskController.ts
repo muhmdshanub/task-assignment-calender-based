@@ -1,6 +1,6 @@
 // controllers/taskController.ts
 import { Request, Response, NextFunction } from 'express';
-import { createTask , getTaskCountsByMonthForManager, getTaskCountsByMonthForEmployee} from '../services/taskService';
+import { createTask , getTaskCountsByMonthForManager, getTaskCountsByMonthForEmployee, fetchTasksByDateForManager, fetchTasksByDateForEmployee} from '../services/taskService';
 import AppError from '../utils/appError'; // Import the AppError class
 import mongoose from 'mongoose';
 
@@ -90,6 +90,8 @@ export const getTaskCountsForManager = async (req: Request, res: Response, next:
 };
 
 
+
+
 // @desc get all tasks summary for a month for employee side
 // @route GET /api/tasks/summary/employee
 // @access Private for manager
@@ -125,5 +127,72 @@ export const getTaskCountsForEmployee = async (req: Request, res: Response, next
       return next(error); // Forward AppError to the global error handler
     }
     next(new AppError(500, 'An unexpected error occurred while fetching task counts.'));
+  }
+};
+
+
+// @desc get all tasks data for a date for manager side
+// @route GET /api/tasks/manager
+// @access Private for manager
+
+export const getTasksByDateForManager = async (req: Request, res: Response, next:NextFunction) => {
+  try {
+    
+    
+    if (!req.user ) {
+      return next(new AppError(401, 'Not authorized'));
+  }
+
+    const managerId = req.user._id; // Assuming the manager's ID is stored in req.user
+    const year = Number(req.query.year);
+    const month = Number(req.query.month);
+    const day = Number(req.query.day);
+
+    console.log(req.query.year, req.query.month, req.query.day)
+    const tasks = await fetchTasksByDateForManager(managerId, year, month, day);
+
+    console.log(tasks)
+    
+    res.status(200).json({
+      success: true,
+      data: tasks,
+    });
+  } catch (error) {
+    if (error instanceof AppError) {
+      return next(error); // Forward AppError to the global error handler
+    }
+    next(new AppError(500, 'An unexpected error occurred while fetching task data.'));
+  }
+};
+
+
+// @desc get all tasks data for a date for employee side
+// @route GET /api/tasks/employee
+// @access Private for employee
+
+export const getTasksByDateForEmployee = async (req: Request, res: Response, next:NextFunction) => {
+  try {
+    
+    
+    if (!req.user ) {
+      return next(new AppError(401, 'Not authorized'));
+  }
+
+    const employeeId = req.user._id; // Assuming the manager's ID is stored in req.user
+    const year = Number(req.query.year);
+    const month = Number(req.query.month);
+    const day = Number(req.query.day);
+
+    const tasks = await fetchTasksByDateForEmployee(employeeId, year, month, day);
+
+    res.status(200).json({
+      success: true,
+      data: tasks,
+    });
+  } catch (error) {
+    if (error instanceof AppError) {
+      return next(error); // Forward AppError to the global error handler
+    }
+    next(new AppError(500, 'An unexpected error occurred while fetching task data.'));
   }
 };

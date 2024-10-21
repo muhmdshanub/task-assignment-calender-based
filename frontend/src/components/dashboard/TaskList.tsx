@@ -1,15 +1,20 @@
 import React from 'react';
 import { Box } from '@mui/material';
 import TaskCard from './TaskCardTile'; // Import the TaskCard component
+import { Task } from '../../types/taskTypes';
+
 
 interface TaskListProps {
-  tasks: { taskName: string; date: string; assignedEmployee: string }[];
+  tasks: Task[];
   onEdit: (taskDetails: any) => void; // Update type to accept task details
   onDelete: (taskDetails: any) => void; // Update type to accept task details
   isManager: boolean,
 }
 
+
 const TaskList: React.FC<TaskListProps> = ({ tasks , onEdit, onDelete, isManager}) => {
+
+  console.log(tasks)
   return (
     <Box
       sx={{
@@ -23,7 +28,7 @@ const TaskList: React.FC<TaskListProps> = ({ tasks , onEdit, onDelete, isManager
     >
         {tasks.map((task, index) => (
           <TaskCard
-            key={index}
+            key={task._id}
             taskName={task.taskName}
             date={task.date}
             assignedEmployee={task.assignedEmployee}
