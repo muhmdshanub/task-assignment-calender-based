@@ -13,6 +13,9 @@ import App from './App'; // Main layout component
 import LoginScreen from './screens/LoginScreen'; // Login screen component
 import DashboardScreen from './screens/DashboardScreen'; // Dashboard screen component
 import PrivateRoute from './components/hoc/PrivateRoute';
+import TestScreen from './screens/TestScreen'
+
+import './index.css'
 
 // Create the router with routes
 const router = createBrowserRouter(
@@ -22,6 +25,7 @@ const router = createBrowserRouter(
       {/* Private routes */}
       <Route element={<PrivateRoute />}>
           <Route path="/dashboard" element={<DashboardScreen />} />
+          <Route path='test' element={<TestScreen />} />
         </Route>
       {/* Fallback route for 404 */}
       <Route path="*" element={<div>404 Not Found</div>} />

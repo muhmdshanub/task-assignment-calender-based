@@ -10,7 +10,7 @@ const baseQuery = fetchBaseQuery({
 export const apiSlice = createApi({
   reducerPath: 'api', // Custom path for the API slice state
   baseQuery,
-  tagTypes: ['User','Task'], // Define your tag types here
+  tagTypes: ['Users','Tasks'], // Define your tag types here
   endpoints: (builder) => ({}), // No endpoints defined yet
 });
 

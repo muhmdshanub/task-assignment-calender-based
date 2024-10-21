@@ -21,7 +21,7 @@ const protectUser = async (req: Request, res: Response, next: NextFunction) => {
 
     if (!token) {
 
-        console.log("cookies came",req.cookies)
+        
         // Throw an error if there is no token
         return next(new AppError(401, 'Not authorized, no user token'));
     }
