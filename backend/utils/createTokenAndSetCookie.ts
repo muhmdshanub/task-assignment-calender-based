@@ -13,7 +13,7 @@ const createTokenAndSetCookie = (userId: string, res: Response) => {
     res.cookie('user_Jwt', token, {
         httpOnly: true,        // Prevents client-side JavaScript from accessing the cookie
         secure: process.env.NODE_ENV === 'production', // Ensure cookies are sent over HTTPS in production
-        sameSite: 'strict',    // Helps with CSRF protection
+        sameSite: 'lax',    // Helps with CSRF protection
         maxAge: 60 * 60 * 1000 * 24, // 1 day expiration (in ms)
     });
 

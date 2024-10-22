@@ -31,7 +31,7 @@ app.use('/api/users', userRoute)
 app.use('/api/task', taskRoute)
 
 // Placeholder route for now
-app.get('/', (req: Request, res: Response) => {
+app.get('/api', (req: Request, res: Response) => {
   res.send('Task Assignment App Backend is Running!');
 });
 
